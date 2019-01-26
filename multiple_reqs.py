@@ -16,13 +16,20 @@ def typed_by_user():
     """Method to handle user input keywords and query API"""
     input_keys = input('Enter your keywords separated by a comma and a space: ')
     chosen_keys = input_keys.split(', ')
-    for key in chosen_keys:
-        r = requests.post('http://www.dogana.gov.al/preferenca/fetch.php', data={'keyword': key})
-        soup = BeautifulSoup(r.text)
-        with open(key + '_responses.csv', 'w') as f:
-            wr = csv.writer(f)
-            wr.writerow(headers)
-            wr.writerows([[td.text.encode('utf-8') for td in row.find_all('td')] for row in soup.select('tr + tr')])
+    if len(input_keys) < 1:
+        print('No key typed. Try again.')
+        typed_by_user()
+    else:
+        for key in chosen_keys:
+            r = requests.post('http://www.dogana.gov.al/preferenca/fetch.php', data={'keyword': key})
+            if r.text:
+                soup = BeautifulSoup(r.text)
+                with open(key + '_responses.csv', 'w') as f:
+                    wr = csv.writer(f)
+                    wr.writerow(headers)
+                    wr.writerows([[td.text.encode('utf-8') for td in row.find_all('td')] for row in soup.select('tr + tr')])
+            else:
+                print('No results for the given keywords.')
 
 
 def imported_from_file():
@@ -35,13 +42,18 @@ def imported_from_file():
         for t in temp:
             chosen_keys.append(t)
     print('keys: ', chosen_keys)
+    if len(chosen_keys) < 1:
+        print('Your keys file is empty. Try again.')
     for key in chosen_keys:
         r = requests.post('http://www.dogana.gov.al/preferenca/fetch.php', data={'keyword': key})
-        soup = BeautifulSoup(r.text)
-        with open(key + '_responses_from_file.csv', 'w') as f:
-            wr = csv.writer(f)
-            wr.writerow(headers)
-            wr.writerows([[td.text.encode('utf-8') for td in row.find_all('td')] for row in soup.select('tr + tr')])
+        if r.text:
+            soup = BeautifulSoup(r.text)
+            with open(key + '_responses_from_file.csv', 'w') as f:
+                wr = csv.writer(f)
+                wr.writerow(headers)
+                wr.writerows([[td.text.encode('utf-8') for td in row.find_all('td')] for row in soup.select('tr + tr')])
+        else:
+            print('No results for the given keywords.')
 
 
 def run_demo():
